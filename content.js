@@ -1,5 +1,5 @@
 /**
- * RTL Fix — Content Script v4.1
+ * RTL Fix — Content Script v4.2
  *
  * Automatically applies right-to-left direction to Arabic text on AI chatbot
  * pages while preserving code blocks, math, and neutral symbols.
@@ -647,6 +647,63 @@ math {
         deactivate();
       }
     });
+  });
+
+  /* ─── Keyboard-shortcut toast ─── */
+
+  /**
+   * Short on-page confirmation shown when the master switch is toggled via
+   * the keyboard shortcut (see background.js). Rendered inside a closed
+   * shadow root so page styles can't affect it and our own scanner never
+   * touches it. Top frame only.
+   */
+  const TOAST_ID = "rtl-fix-toast";
+  let toastTimer = null;
+
+  function showToast(enabled) {
+    if (window !== window.top || !document.documentElement) return;
+
+    document.getElementById(TOAST_ID)?.remove();
+    clearTimeout(toastTimer);
+
+    const host = document.createElement("div");
+    host.id = TOAST_ID;
+    const shadow = host.attachShadow({ mode: "closed" });
+    shadow.innerHTML = `
+      <style>
+        .t {
+          position: fixed; top: 18px; left: 50%; z-index: 2147483647;
+          transform: translate(-50%, -12px); opacity: 0;
+          transition: opacity .2s ease, transform .2s ease;
+          display: flex; align-items: center; gap: 8px;
+          padding: 10px 18px; border-radius: 10px;
+          background: #12121f; color: #e0e0e0;
+          border: 1px solid rgba(139,92,246,.35);
+          box-shadow: 0 8px 24px rgba(0,0,0,.35);
+          font: 600 13px/1.4 "Noto Kufi Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
+          direction: rtl; pointer-events: none;
+        }
+        .t.show { opacity: 1; transform: translate(-50%, 0); }
+        .d { width: 8px; height: 8px; border-radius: 50%; }
+        .on  { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .off { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+      </style>
+      <div class="t" role="status">
+        <span class="d ${enabled ? "on" : "off"}"></span>
+        <span>RTL Fix ${enabled ? "مفعّلة" : "متوقفة"}</span>
+      </div>`;
+    document.documentElement.appendChild(host);
+
+    const box = shadow.querySelector(".t");
+    requestAnimationFrame(() => box.classList.add("show"));
+    toastTimer = setTimeout(() => {
+      box.classList.remove("show");
+      setTimeout(() => host.remove(), 250);
+    }, 1600);
+  }
+
+  chrome?.runtime?.onMessage?.addListener(msg => {
+    if (msg?.type === "rtl-toast") showToast(!!msg.enabled);
   });
 
   /* ─── Bootstrap ─── */

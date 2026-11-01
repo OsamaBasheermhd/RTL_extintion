@@ -165,6 +165,17 @@
       font-size:10px;
       color:var(--text-muted);
     }
+    .shortcut { margin-top:6px; color:var(--text-dim); }
+    .shortcut kbd {
+      display:inline-block;
+      direction:ltr;
+      padding:1px 6px;
+      border-radius:4px;
+      background:var(--bg-elevated);
+      border:1px solid var(--border-accent);
+      color:var(--accent);
+      font:600 10px/1.6 ui-monospace,Consolas,monospace;
+    }
   </style>
 </head>
 <body>
@@ -174,7 +185,7 @@
     <div class="header-left">
       <span class="logo">🔧</span>
       <h1>RTL Fix</h1>
-      <span class="badge">v4.1</span>
+      <span class="badge">v4.2</span>
     </div>
     <label class="sw" title="تشغيل / إيقاف">
       <input type="checkbox" id="master">
@@ -240,7 +251,12 @@
     </div>
   </section>
 
-  <div class="footer">RTL Fix — إصلاح اتجاه النص العربي</div>
+  <div class="footer">
+    RTL Fix — إصلاح اتجاه النص العربي
+    <div class="shortcut" id="shortcutHint" title="يمكن تغييره من chrome://extensions/shortcuts">
+      ⌨️ اختصار التشغيل / الإيقاف: <kbd id="shortcutKey">Alt+Shift+R</kbd>
+    </div>
+  </div>
 
   <script src="popup.js"></script>
 </body>

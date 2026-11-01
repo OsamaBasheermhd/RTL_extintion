@@ -1,5 +1,5 @@
 /**
- * RTL Fix — Popup v4.0
+ * RTL Fix — Popup v4.2
  *
  * Reads/writes settings to chrome.storage.sync and keeps the UI in sync.
  * Settings object shape mirrors DEFAULTS in content.js.
@@ -121,11 +121,32 @@
     }
   }
 
+  /* ───────── keyboard shortcut hint ───────── */
+
+  /** Show the shortcut actually bound by the user (may be customised or unset). */
+  async function showShortcut() {
+    const keyEl = $("shortcutKey");
+    try {
+      const cmds = await chrome.commands.getAll();
+      const cmd = cmds.find((c) => c.name === "toggle-rtl");
+      keyEl.textContent = cmd?.shortcut || "غير معيّن";
+    } catch { /* keep default text */ }
+  }
+
+  /* ───────── live sync (e.g. toggled via shortcut while popup is open) ───────── */
+
+  chrome.storage.onChanged.addListener(async (_changes, area) => {
+    if (area !== "sync") return;
+    cfg = await load();
+    render();
+  });
+
   /* ───────── init ───────── */
 
   (async () => {
     cfg = await load();
     render();
     showHost();
+    showShortcut();
   })();
 })();
